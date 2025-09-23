@@ -1,0 +1,79 @@
+components:
+  schemas:
+    Problem:
+      description: Describes the probblem in case of error.
+      type: object
+      title: Problem
+      required:
+        - Title
+      properties:
+        Title:
+          type: string
+          description: >-
+            A short, human-readable summary of the problem type.
+            it SHOULD not change from occurence to occurence of the problem. See [RFC7231], Section 3.4
+        Detail:
+          type: string
+          description:
+            A human-readable explanation specific to this occurence of the problem
+        ValidationErrors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+        BusinessErrors:
+          type: array
+          items:
+            $ref: '#/components/schemas/BusinessError'
+        TechnicalErrors:
+          type: array
+          items:
+            $ref: '#/components/schemas/TechnicalError'
+
+    ValidationError:
+      type: object
+      description: Validation of payload, url parameters  and request parameter to the specification of the OpenAPI contract
+      required:
+        - AttributeName
+        - Reason
+      properties:
+        AttributeName:
+          type: string
+          description: Name of the element in the payload, request parameter, URI parameter or header parameter
+        Reason:
+          type: string
+          description: A short human-readable summary of the reason.
+        Message:
+          type: string
+          description: A short human-readable summary of the message
+
+    BusinessError:
+      type: object
+      description: Validation of the business rules of the request. Happens after validation of the OpenAPI contract.
+      required:
+        - Code
+      properties:
+        Code:
+          type: string
+          description: An ISO  standard [https://www.iso20022.org/]
+        Reason:
+          type: string
+          description: A short human-readable summary of the reason.
+        Message:
+          type: string
+          description: A short human-readable summary of the message
+
+    TechnicalError:
+      type: object
+      description: This type of error occurs during an irrecoverable technical problem.
+      required:
+        - Code
+      properties:
+        Code:
+          type: string
+          description: An ISO  standard [https://www.iso20022.org/]
+        Reason:
+          type: string
+          description: A short human-readable summary of the reason.
+        Message:
+          type: string
+          description: A short human-readable summary of the message

@@ -1,0 +1,46 @@
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: DEBUG
+##springdoc:
+##    packagesToScan: ht.gouv.menfp.usi.dashboard.rest
+##    pathsToMatch: /v1, /api/v1/**   user=admin and password=password
+
+server:
+  port: 6295
+spring:
+  application:
+    name: calendar
+  datasource:
+    initialization-mode: always
+    password: admin
+    url: jdbc:postgresql://localhost:5432/postgres?currentSchema=bms
+    username: postgres
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      connection-timeout: 100000
+      idle-timeout: 600000
+      minimum-idle: 30
+      max-lifetime: 900000
+      maximum-pool-size: 30
+      pool-name: HikariPool
+      leak-detection-threshold: 90000
+      connection-test-query: SELECT 1
+      data-source-properties:
+        cache-prep-stmts: true
+        prep-stmt-cache-size: 256
+        prep-stmt-cache-sql-limit: 2048
+        use-server-prep-stmts: true
+  jpa:
+    hibernate:
+      ddl-auto: none
+    # show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        temp:
+          use_jdbc_metadata_defaults: false
+      id:
+        new_generator_mappings: false
+

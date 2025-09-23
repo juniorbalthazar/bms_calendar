@@ -1,0 +1,319 @@
+openapi: 3.0.0
+servers:
+  - url: 'http://localhost:6295/calendar'
+    description: Local server
+info:
+  title: calendar
+  version: 1.0.0
+  description: API  that expose all endpoint for Process API
+  contact:
+    name: Lab
+    email: juniorbalthazar@yahoo.fr
+    url: https://github.com/juniorbalthazar/bms_calendar
+  license:
+    name: Appliquart 1.0
+    url: 'https://api.calendar.com/license'
+tags:
+  - name: admins
+    description: Secured Admin-only calls
+  - name: regular-users
+    description: Operations available to regular users
+paths:
+  /calendar/register:
+    post:
+      tags:
+        - regular-users
+      summary: save calendar informations.
+      operationId: saveCalender
+      description: post calendar informations
+      requestBody:
+        description: save calendar informations.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CalendarRequest'
+        required: true
+      responses:
+        '201': # status code
+          description: A JSON string containing a boolean value if true is successfully ortherwise false
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+
+
+
+  /calendar/{startDate}/{endDate}:
+    get:
+      tags:
+        - regular-users
+      summary: list of calendar.
+      operationId: calendarBetweenDate
+      description: list of calendar between two dates
+      parameters:
+        - name: startDate
+          in: path
+          description: start date
+          example: 20-09-2025
+          required: true
+          schema:
+            type: Date
+        - name: endDate
+          in: path
+          description: end date
+          example: 25-09-2025
+          required: true
+          schema:
+            type: Date
+      responses:
+        '200': # status code
+          description: A JSON string containing a list of calendar information's
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalendarResponse'
+
+
+  /calendar/{date}:
+    get:
+      tags:
+        - regular-users
+      summary: list of users account.
+      operationId: usersFilter
+      description: list of users account with pagination and filter
+      parameters:
+        - name: date
+          in: path
+          example: 20-09-2025
+          required: true
+          schema:
+            type: Date
+            format: date
+      responses:
+        '200': # status code
+          description: A JSON string containing a list of calendar information's
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalendarResponse'
+
+
+
+components:
+  schemas:
+    ########################
+    #  API Specs  #
+    ########################
+    Response:
+      type: object
+      properties:
+        isSuccessfully:
+          type: boolean
+          example: true
+          description: true if operation is successfully otherwise false
+
+    CalendarRequest:
+      type: object
+      properties:
+        year:
+          type: integer
+          description: start year
+          example: 2025
+        numberOfYear:
+          type: integer
+          description: number of year to generate
+          example: 5 {2025-2029}
+    CalendarBean:
+      type: object
+      properties:
+        calendarDate:
+          type: string
+          format: text
+          description: Date for calendar
+          example: 20-09-2025
+        calendarDateExpired:
+          type: boolean
+          description: true if date is expired otherwise false
+          example: false
+        day_of_month:
+          type: number
+          format: number
+          description: date in long format
+          example: 1734768000000
+        holidayName:
+          type: string
+          format: text
+          description: name of holiday if exist otherwise null
+          example: null
+        holidayNote:
+          type: string
+          format: text
+          description: note of holiday if exist otherwise null
+          example: null
+        isBusinessDay:
+          type: number
+          format: number
+          description: is business day
+          example: 1734768000000
+        isDateAvailable:
+          type: number
+          format: number
+          description: is date available
+          example: 1734768000000
+        isHalfDay:
+          type: number
+          format: number
+          description: is half day
+          example: 1734768000000
+        isHolyDay:
+          type: number
+          format: number
+          description: is holy day
+          example: 1734768000000
+        year:
+          type: number
+          format: number
+          description: year of date
+          example: 1734768000000
+        dayOfWeek:
+          type: number
+          format: number
+          description: day of week
+          example: 1734768000000
+        monthOfYear:
+          type: number
+          format: number
+          description: month of year
+          example: 1734768000000
+        dateStr:
+          type: string
+          format: text
+          description: date in string format
+          example: null
+        dateLong:
+          type: number
+          format: number
+          description: date in long format
+          example: 1734768000000
+        dayOfWeekBean:
+            $ref: '#/components/schemas/DayOfWeekBean'
+        monthOfYearBean:
+          $ref: '#/components/schemas/MonthOfYearBean'
+
+    CalendarResponse:
+      type: object
+      properties:
+        isSuccessfully:
+          type: boolean
+          example: true
+          description: true if operation is successfully otherwise false
+        calendar:
+          type: array
+          items:
+           $ref: '#/components/schemas/CalendarBean'
+    DayOfWeekBean:
+      type: object
+      properties:
+        dayOfWeekId:
+          type: integer
+          description: day of week id
+          example: 2025
+        dayOfWeekName:
+          type: string
+          format: text
+          description: day of week name
+          example: Monday
+
+    MonthOfYearBean:
+      type: object
+      properties:
+        monthOfYearId:
+          type: integer
+          description: month of year id
+          example: 100
+        monthOfYearName:
+          type: string
+          format: text
+          description: Month of year name
+          example: January
+
+
+  ##  Problem:
+  ##    $ref: 'problem-schema.yaml#/components/schemas/Problem'
+    Problem:
+      description: Describes the probblem in case of error.
+      type: object
+      title: Problem
+      required:
+        - Title
+      properties:
+        Title:
+          type: string
+          description: >-
+            A short, human-readable summary of the problem type.
+            it SHOULD not change from occurence to occurence of the problem. See [RFC7231], Section 3.4
+        Detail:
+          type: string
+          description:
+            A human-readable explanation specific to this occurence of the problem
+        ValidationErrors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+        BusinessErrors:
+          type: array
+          items:
+            $ref: '#/components/schemas/BusinessError'
+        TechnicalErrors:
+          type: array
+          items:
+            $ref: '#/components/schemas/TechnicalError'
+
+    ValidationError:
+      type: object
+      description: Validation of payload, url parameters  and request parameter to the specification of the OpenAPI contract
+      required:
+        - AttributeName
+        - Reason
+      properties:
+        AttributeName:
+          type: string
+          description: Name of the element in the payload, request parameter, URI parameter or header parameter
+        Reason:
+          type: string
+          description: A short human-readable summary of the reason.
+        Message:
+          type: string
+          description: A short human-readable summary of the message
+
+    BusinessError:
+      type: object
+      description: Validation of the business rules of the request. Happens after validation of the OpenAPI contract.
+      required:
+        - Code
+      properties:
+        Code:
+          type: string
+          description: An ISO  standard [https://www.iso20022.org/]
+        Reason:
+          type: string
+          description: A short human-readable summary of the reason.
+        Message:
+          type: string
+          description: A short human-readable summary of the message
+
+    TechnicalError:
+      type: object
+      description: This type of error occurs during an irrecoverable technical problem.
+      required:
+        - Code
+      properties:
+        Code:
+          type: string
+          description: An ISO  standard [https://www.iso20022.org/]
+        Reason:
+          type: string
+          description: A short human-readable summary of the reason.
+        Message:
+          type: string
+          description: A short human-readable summary of the message

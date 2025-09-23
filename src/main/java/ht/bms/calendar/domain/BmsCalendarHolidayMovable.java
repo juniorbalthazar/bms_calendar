@@ -1,0 +1,42 @@
+package ht.bms.calendar.domain;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.util.Date;
+
+
+/**
+ * The persistent class for the "BMS_CALENDAR_HOLIDAY_MOVABLE" database table.
+ * 
+ */
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
+@Table(name="bms_calendar_holiday_movable")
+@NamedQuery(name="BmsCalendarHolidayMovable.findAll", query="SELECT b FROM BmsCalendarHolidayMovable b")
+public class BmsCalendarHolidayMovable implements Serializable {
+	private static final long serialVersionUID = 1L;
+
+	@Id
+	@Temporal(TemporalType.DATE)
+	@Column(name="holiday_id")
+	private Date holidayId;
+
+	@Column(name="holiday_name")
+	private String holidayName;
+
+	@Column(name="HOLIDAY_STR")
+	private String holidayStr;
+	
+	@Column(name="IS_AVAILABLE")
+	private BigDecimal isAvailable;
+
+}
