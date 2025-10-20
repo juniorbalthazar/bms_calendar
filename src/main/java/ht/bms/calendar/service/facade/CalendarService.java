@@ -1,14 +1,14 @@
 package ht.bms.calendar.service.facade;
 
-import ht.bms.calendar.domain.BmsCalendar;
+import ht.bms.calendar.domain.*;
 import ht.bms.calendar.domain.repo.RetrytableRepo;
 import ht.bms.calendar.exception.CalendarException;
-import ht.bms.calendar.model.CalendarBean;
-import ht.bms.calendar.model.CalendarResponse;
-import ht.bms.calendar.model.Response;
+import ht.bms.calendar.exception.InvalidInputException;
+import ht.bms.calendar.model.*;
 import ht.bms.calendar.service.Constants;
 import ht.bms.calendar.service.mapper.CalendarMapper;
 import ht.bms.calendar.utils.DateHelper;
+import ht.bms.calendar.utils.Utils;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,12 +16,15 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Transactional
 @Service
@@ -36,30 +39,15 @@ public class CalendarService {
         this.mapper = mapper;
     }
 
-    public Mono<CalendarResponse> GetCalendarDate(Date date){
-
-        return null;
-    }
-
-    public Mono<CalendarResponse> GetCalendarBetweenDate(Date today,Date date){
-
-        return null;
-    }
-
-    public Mono<Response> setCalendar(Date today, Integer year){
-
-        return null;
-    }
-
-    public Integer checkHoliday(String day){
-        if (Optional.ofNullable(day).isEmpty())
+     public Integer checkHoliday(String date){
+        if (Optional.ofNullable(date).isEmpty())
             throw new IllegalArgumentException("Day is required");
 
-            if(repo.getHolidayStr(day).isPresent()) {
+            if(repo.getHolidayFixedStr(date).isPresent()) {
                 return Constants.IS_AVAILABLE;
             }
 
-            if(repo.getHolidayStr(day).isPresent()) {
+            if(repo.getHolidayFixedStr(date).isPresent()) {
 
                 return   Constants.IS_AVAILABLE;
 
@@ -67,33 +55,16 @@ public class CalendarService {
         return Constants.IS_NOT_AVAILABLE;
     }
 
-    public boolean checkDayBetween(Date date){
-        if (Optional.ofNullable(date).isEmpty())
-            throw new IllegalArgumentException("Date is required");
-            if(date.before(DateHelper.toDayPlus30())) {
-                return true;
-            }
-
-        return false;
-    }
-
 
 
     public Mono<CalendarResponse> allAvailableDayFrom30Day(BigDecimal officeId, BigDecimal serviceId,String avaibleDateForOfficeCapacity) {
-        // TODO Auto-generated method stub
 
-        if (officeId == null) {
-            throw new IllegalArgumentException("OfficeId is required");
-        }
-        if (serviceId == null) {
-            throw new IllegalArgumentException("serviceId is required");
-        }
-        if (avaibleDateForOfficeCapacity == null) {
-            throw new IllegalArgumentException("Date for Office Capacity is required");
-        }
+        Utils.isNullOrEmpty(officeId, new InvalidInputException("OfficeId is required"));
+        Utils.isNullOrEmpty(serviceId, new InvalidInputException("serviceId is required"));
+        Utils.isNullOrEmpty(avaibleDateForOfficeCapacity, new InvalidInputException("Date for Office Capacity is required"));
 
         CalendarResponse response = new CalendarResponse();
-        List<BmsCalendar> calendars = Optional.ofNullable(repo.getCalendarBetwenDate(DateHelper.tomorrowDay(), DateHelper.toDayPlus30()))
+        List<BmsCalendar> calendars = Optional.ofNullable(repo.getCalendarBetwenDate(DateHelper.tomorrowDay(), DateHelper.toDatePlus30NextDay()))
                 .orElseThrow(() -> new CalendarException("No records found"));
 
         Predicate<BmsCalendar> isDayAvailable = e -> e.getIsdavailable().intValue() == Constants.IS_AVAILABLE;
@@ -117,52 +88,45 @@ public class CalendarService {
     }
 
 
-    public Mono<CalendarBean> isAvailableDay(String day,BigDecimal officeId, BigDecimal serviceId,String avaibleDateForOfficeCapacity){
-        // TODO Auto-generated method stub
+    public Mono<CalendarBean> isAvailableDay(String date,BigDecimal officeId, BigDecimal serviceId,String avaibleDateForOfficeCapacity){
 
-        if (officeId == null) {
-            throw new IllegalArgumentException("OfficeId is required");
-        }
-        if (serviceId == null) {
-            throw new IllegalArgumentException("serviceId is required");
-        }
-        if (avaibleDateForOfficeCapacity == null) {
-            throw new IllegalArgumentException("Date for Office Capacity is required");
-        }
+        Utils.isNullOrEmpty(date, new InvalidInputException("Day is required"));
+        Utils.isNullOrEmpty(officeId, new InvalidInputException("OfficeId is required"));
+        Utils.isNullOrEmpty(serviceId, new InvalidInputException("serviceId is required"));
+        Utils.isNullOrEmpty(avaibleDateForOfficeCapacity, new InvalidInputException("Date for Office Capacity is required"));
 
-        Optional<BmsCalendar> calendar = Optional.ofNullable(repo.getCalendarDateStr(day))
-                .orElseThrow(() -> new CalendarException("No records found"));
+        if (DateHelper.checkEarlyDate(DateHelper.StringToDate(date)) ||
+                DateHelper.checkDayPassDate(DateHelper.StringToDate(date)))
+            throw new CalendarException("The date must be between today and the next 30 days");
 
-                Predicate<BmsCalendar> isDayAvailable = e -> e.getIsdavailable().intValue() == Constants.IS_AVAILABLE;
-                Predicate<BmsCalendar> isBusinessDay = e -> e.getIsbusinessday().intValue() == Constants.IS_AVAILABLE;
-                Predicate<BmsCalendar> isHoliday = e -> e.getIsholiday().intValue() == checkHoliday(e.getDateStr());
-                Predicate<BmsCalendar> isNumTranSac = e -> e.getDateStr().equals(avaibleDateForOfficeCapacity);
-                return Mono.justOrEmpty(
-                        Optional.ofNullable(calendar.stream().toList())
-                                .stream()
-                                .flatMap(List::stream)
-                                .filter(isDayAvailable.and(isBusinessDay).and(isHoliday).and(isNumTranSac))
-                                .map(mapper::toCalendarDto)
-                                .findFirst()
-                );
+
+            Optional<BmsCalendar> calendar = Optional.ofNullable(repo.getCalendarDateStr(date))
+                    .orElseThrow(() -> new CalendarException("No records found"));
+
+            Predicate<BmsCalendar> isDayAvailable = e -> e.getIsdavailable().intValue() == Constants.IS_AVAILABLE;
+            Predicate<BmsCalendar> isBusinessDay = e -> e.getIsbusinessday().intValue() == Constants.IS_AVAILABLE;
+            Predicate<BmsCalendar> isHoliday = e -> e.getIsholiday().intValue() == checkHoliday(e.getDateStr());
+            Predicate<BmsCalendar> isNumTranSac = e -> e.getDateStr().equals(avaibleDateForOfficeCapacity);
+            return Mono.justOrEmpty(
+                    Optional.ofNullable(calendar.stream().toList())
+                            .stream()
+                            .flatMap(List::stream)
+                            .filter(isDayAvailable.and(isBusinessDay).and(isHoliday).and(isNumTranSac))
+                            .map(mapper::toCalendarDto)
+                            .findFirst()
+            );
+
     }
 
 
 
     public Mono<CalendarBean> checkAvailableDay(BigDecimal officeId, BigDecimal serviceId, String avaibleDateForOfficeCapacity){
-        // TODO Auto-generated method stub
-        if (officeId == null) {
-            throw new IllegalArgumentException("OfficeId is required");
-        }
-        if (serviceId == null) {
-            throw new IllegalArgumentException("serviceId is required");
-        }
-        if (avaibleDateForOfficeCapacity == null) {
-            throw new IllegalArgumentException("Date for Office Capacity is required");
-        }
+        Utils.isNullOrEmpty(officeId, new InvalidInputException("OfficeId is required"));
+        Utils.isNullOrEmpty(serviceId, new InvalidInputException("serviceId is required"));
+        Utils.isNullOrEmpty(avaibleDateForOfficeCapacity, new InvalidInputException("Date for Office Capacity is required"));
 
         CalendarResponse response = new CalendarResponse();
-        List<BmsCalendar> calendars = Optional.ofNullable(repo. getCalendarLong(new BigDecimal(DateHelper.tomorrowDay().getTime()),new BigDecimal(DateHelper.toDayPlus30().getTime())))
+        List<BmsCalendar> calendars = Optional.ofNullable(repo. getCalendarLong(new BigDecimal(DateHelper.tomorrowDay().getTime()),new BigDecimal(DateHelper.toDatePlus30NextDay().getTime())))
                 .orElseThrow(() -> new CalendarException("No records found"));
 
         Predicate<BmsCalendar> isDayAvailable = e -> e.getIsdavailable().intValue() == Constants.IS_AVAILABLE;
@@ -178,6 +142,176 @@ public class CalendarService {
                         .findFirst()
         );
 
+    }
+
+    ////////////////////////////
+
+    public Mono<CalendarResponse> setCalendar(int year, int numberOfYear) throws CalendarException{
+        if (numberOfYear < 1) {
+            throw new CalendarException("Le nombre d'année doit etre specifier...");
+        }
+        Utils.isNullOrEmpty(year, new InvalidInputException("Day is required"));
+        Utils.isNullOrEmpty(numberOfYear, new InvalidInputException("Day is required"));
+
+        List<CalendarBean> calendar = new ArrayList<>();
+        LocalDate startDate = LocalDate.of(year, 1, 1);
+        int totalDays = Period.between(startDate, startDate.plusYears(numberOfYear)).getDays();
+
+        for (int i = 0; i < totalDays; i++) {
+            LocalDate currentDate = startDate.plusDays(i);
+            BmsCalendar newDate = new BmsCalendar();
+
+            newDate.setCalendarDate(Date.from(currentDate.atStartOfDay(ZoneId.systemDefault()).toInstant()));
+            newDate.setDateStr(DateHelper.DateToString(Date.from(currentDate.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant())));
+            newDate.setDateLong(new BigDecimal(Date.from(currentDate.atStartOfDay(ZoneId.systemDefault()).toInstant()).getTime()));
+
+
+
+            newDate.setYear(new BigDecimal(currentDate.getYear()));
+            newDate.setDayofmonth(new BigDecimal(currentDate.getDayOfMonth()));
+
+            BmsDayofweek dayOfWeek = new BmsDayofweek();
+            dayOfWeek.setDayofweekId(new BigDecimal(currentDate.getDayOfWeek().getValue()));
+            newDate.setBmsDayofweek(dayOfWeek);
+
+            if (currentDate.getDayOfWeek().getValue() == 6 || currentDate.getDayOfWeek().getValue() == 7) {
+                newDate.setIsdavailable(BigDecimal.ONE);
+                newDate.setIsbusinessday(BigDecimal.ONE);
+            } else {
+                newDate.setIsdavailable(BigDecimal.ZERO);
+                newDate.setIsbusinessday(BigDecimal.ZERO);
+            }
+
+            BmsMonthofyear monthOfYear = new BmsMonthofyear();
+            monthOfYear.setMonthofyearId(new BigDecimal(currentDate.getDayOfMonth()));
+            newDate.setBmsMonthofyear(monthOfYear);
+
+            newDate.setIsholiday(BigDecimal.ONE);
+            newDate.setIshalfday(BigDecimal.ONE);
+            newDate.setCreatedDate(DateHelper.toDate());
+
+            newDate = repo.saveCalendar(newDate);
+            calendar.add(mapper.toCalendarDto(newDate));
+        }
+        CalendarResponse response = new CalendarResponse();
+        response.setIsSuccessfully(true);
+        response.setCalendar(calendar);
+        return Mono.just(response);
+    }
+
+
+
+    public Mono<CalendarBean> getDate(String date) throws CalendarException{
+        Utils.isNullOrEmpty(date, new InvalidInputException("Day is required"));
+        return Mono.just(repo.getCalendarDateStr(date)
+                .map(mapper::toCalendarDto)
+                .orElseThrow(()->new CalendarException("No record found for the day "+date)));
+    }
+
+
+    public Mono<Response> setHoliday(String date, String holidayType, String name, String note)
+            throws CalendarException   {
+
+        Utils.isNullOrEmpty(date, new InvalidInputException("Day is required"));
+        Utils.isNullOrEmpty(holidayType, new InvalidInputException("Holiday Type is required"));
+        Utils.isNullOrEmpty(name, new InvalidInputException("name is required"));
+        Utils.isNullOrEmpty(note, new InvalidInputException("Note is required"));
+        Response response=new Response();
+        Optional<BmsCalendar>calendar = repo.getCalendarDateStr(date);
+        if(calendar.isPresent()) {
+
+            if(holidayType.equals(Constants.HOLIDAY_TYPE[0])) {
+                BmsCalendarHolidayFixed fixe=new BmsCalendarHolidayFixed();
+                fixe.setHolidayId(calendar.get().getCalendarDate());
+                fixe.setHolidayName(name);
+                fixe.setHolidayStr(calendar.get().getDateStr());
+                fixe.setIsAvailable(new BigDecimal(Constants.IS_AVAILABLE));
+                BmsCalendarHolidayFixed fixeSaved=repo.saveCalendarHolidayFixed(fixe);
+                if(fixeSaved!=null) {
+                    BmsCalendar cal=calendar.get();
+                    cal.setHolidayName(name);
+                    cal.setHolidayNote(note);
+                    cal.setIsdavailable(new BigDecimal(Constants.IS_NOT_AVAILABLE));
+                    cal.setIsholiday(new BigDecimal(Constants.IS_AVAILABLE));
+                    BmsCalendar calSaved=repo.saveCalendar(cal);
+                    if(calSaved!=null) {
+                        response.setIsSuccessfully(true);
+                        return Mono.just(response);
+                    }
+                }
+
+            }
+            else if(holidayType.equals(Constants.HOLIDAY_TYPE[1])) {
+                BmsCalendarHolidayMovable move=new BmsCalendarHolidayMovable();
+                move.setHolidayId(calendar.get().getCalendarDate());
+                move.setHolidayName(name);
+                move.setHolidayStr(calendar.get().getDateStr());
+                move.setIsAvailable(new BigDecimal(Constants.IS_AVAILABLE));
+                BmsCalendarHolidayMovable moveSaved=repo.saveCalendarHolidayMovable(move);
+                if(moveSaved!=null) {
+                    BmsCalendar cal=calendar.get();
+                    cal.setHolidayName(name);
+                    cal.setHolidayNote(note);
+                    cal.setIsdavailable(new BigDecimal(Constants.IS_NOT_AVAILABLE));
+                    cal.setIsholiday(new BigDecimal(Constants.IS_AVAILABLE));
+                    BmsCalendar calSaved=repo.saveCalendar(cal);
+                    if(calSaved!=null) {
+                        response.setIsSuccessfully(true);
+                        return Mono.just(response);
+                    }
+                }
+            }
+
+        }
+        return null;
+    }
+
+
+
+    public Mono<List<CalendarBean>> getMonthOfYear(BigDecimal month, BigDecimal year) throws CalendarException {
+        Utils.isNullOrEmpty(month, new InvalidInputException("Month is required"));
+        Utils.isNullOrEmpty(year, new InvalidInputException("Year is required"));
+        return Mono.justOrEmpty( repo.getCalendar(year, month).stream()
+                .map(c->mapper.toCalendarDto(c)).collect(Collectors.toList()));
+    }
+
+
+    public Mono<Response> addOfficeInInstitution(Mono<OfficeBean> request) throws CalendarException {
+
+        return null;
+    }
+
+
+    public Mono<Response> addInstitution(Mono<InstitutionBean> request) throws CalendarException {
+
+        return null;
+    }
+
+
+    public Mono<Response> addServiceInInstitution(Mono<ServiceBean> request) throws CalendarException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+
+    public Mono<Response> addSetting(Mono<SettingBean> request){
+        return request.map(mapper::toSetting)
+                .flatMap(s->{
+                    BmsSetting saved=repo.saveSetting(s);
+                    Response response = new Response();
+                    response.isSuccessfully(saved!=null);
+                    return Mono.just(response);
+                });
+    }
+
+
+    public Mono<SettingBean> getSetting(BigDecimal institutionId){
+            Utils.isNullOrEmpty(institutionId, new InvalidInputException("InstitutionId is required"));
+        return Mono.justOrEmpty(
+                repo.getSetting(institutionId)
+                        .map(mapper::toSettingDto)
+                        .orElseThrow(()->new CalendarException("No record found for the institution "+institutionId))
+        );
     }
 
 }

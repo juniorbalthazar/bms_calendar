@@ -215,7 +215,7 @@ components:
       type: object
       properties:
         dayOfWeekId:
-          type: integer
+          type: number
           description: day of week id
           example: 2025
         dayOfWeekName:
@@ -228,7 +228,7 @@ components:
       type: object
       properties:
         monthOfYearId:
-          type: integer
+          type: number
           description: month of year id
           example: 100
         monthOfYearName:
@@ -236,6 +236,135 @@ components:
           format: text
           description: Month of year name
           example: January
+
+    InstitutionBean:
+      type: object
+      properties:
+        institutionId:
+          type: number
+          description: institution id
+          example: 100
+        email:
+          type: string
+          format: text
+          description: email of institution
+          example : zlab.info@gouv.ht
+        fullName:
+          type: string
+          format: text
+          description: name of institution
+          example : zaria laboratory
+        phone:
+          type: string
+          format: text
+          description: phone of institution
+          example : +509 3701 1234
+        shortName:
+          type: string
+          format: text
+          description: short name of institution
+          example : zlab
+        isDefault:
+          type: number
+          description: 0 is equal to false and 1 is equal to true
+          example : 0
+
+
+    OfficeBean:
+      type: object
+      properties:
+        officeId:
+          type: number
+          description: office id
+          example: 100
+        active:
+          type: number
+          description: 0 is equal to false and 1 is equal to true
+          example : 0
+        isCentral:
+          type: number
+          description: 0 is equal to false and 1 is equal to true
+          example : 1
+        officeName:
+          type: string
+          format: text
+          description: name of office
+          example : head office
+        BmsInstitutionBean:
+          $ref: '#/components/schemas/InstitutionBean'
+    ServiceBean:
+      type: object
+      properties:
+        serviceId:
+          type: number
+          description: service id
+          example: 100
+        fullName:
+          type: string
+          format: text
+          description: full name of service
+          example: BRJ / Identity
+        isAvailable:
+          type: number
+          description: 0 is equal to false and 1 is equal to true
+          example : 0
+        shortName:
+          type: string
+          format: text
+          description: short name of service
+          example : BRJ
+    SettingBean:
+      type: object
+      properties:
+        settingId:
+          type: number
+          description: Setting id
+          example: 100
+        institutionId:
+          type: number
+          description: office id
+          example: 100
+        nbreTransPerApplicant:
+          type: number
+          description: 0 is equal to false and 1 is equal to true
+          example : 0
+        officeCapacity:
+          type: number
+          description: nomber of office capacity
+          example : 100
+        startHours:
+          type: string
+          format: text
+          description:  start hour of office
+          example : 8:00 AM
+        endHours:
+          type: string
+          format: text
+          description: end hour of office
+          example : 4:00 PM
+        expirationCertificat:
+          type: number
+          description: nomber of days before certificat expiration
+          example : 365
+        sendEmailTransaction:
+          type: number
+          description:  0 is equal to false and 1 is equal to true
+          example : head office
+        maxTimeTxBeforePay:
+          type: number
+          description: max time transaction before pay
+          example : 5
+        smsMesageBody:
+          type: string
+          format: text
+          description: format of sms message
+          example : html
+
+
+
+
+
+
 
 
   ##  Problem:
