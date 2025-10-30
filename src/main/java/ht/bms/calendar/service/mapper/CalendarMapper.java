@@ -20,8 +20,8 @@ public interface CalendarMapper {
     @Mapping(source = "isdavailable",target = "isDateAvailable",defaultValue ="")
     @Mapping(source = "ishalfday",target = "isHalfDay",defaultValue ="")
     @Mapping(source = "isholiday",target = "isHolyDay",defaultValue ="")
-    @Mapping(source = "bmsDayofweek.dayofweekName",target ="dayOfWeek" )
-    @Mapping(source = "bmsMonthofyear.monthofyearName",target ="monthOfYear" )
+    @Mapping(source = "bmsDayofweek.dayofweekId",target ="dayOfWeek" )
+    @Mapping(source = "bmsMonthofyear.monthofyearId",target ="monthOfYear" )
     CalendarBean toCalendarDto(BmsCalendar calendar);
 
 

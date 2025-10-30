@@ -52,13 +52,15 @@ public class BmsCalendar implements Serializable {
 
 	private BigDecimal isholiday;
 	
-	@Column(name="CALENDAR_STR")
+	@Column(name="calendar_str")
 	private String dateStr;
 	
-	@Column(name="CALENDAR_LON")
+	@Column(name="calendar_long")
 	private BigDecimal dateLong;
 
 	private BigDecimal year;
+
+
 	
 
 	//bi-directional many-to-one association to BmsDayofweek

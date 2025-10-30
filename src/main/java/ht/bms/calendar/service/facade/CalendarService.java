@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.ZoneId;
@@ -147,15 +148,17 @@ public class CalendarService {
     ////////////////////////////
 
     public Mono<CalendarResponse> setCalendar(int year, int numberOfYear) throws CalendarException{
-        if (numberOfYear < 1) {
-            throw new CalendarException("Le nombre d'année doit etre specifier...");
-        }
+
         Utils.isNullOrEmpty(year, new InvalidInputException("Day is required"));
         Utils.isNullOrEmpty(numberOfYear, new InvalidInputException("Day is required"));
 
+        if (numberOfYear < 1) {
+            throw new CalendarException("Le nombre d'année doit etre specifier...");
+        }
+
         List<CalendarBean> calendar = new ArrayList<>();
         LocalDate startDate = LocalDate.of(year, 1, 1);
-        int totalDays = Period.between(startDate, startDate.plusYears(numberOfYear)).getDays();
+        long totalDays = Utils.getDayDiff( Period.between(startDate, startDate.plusYears(numberOfYear)));
 
         for (int i = 0; i < totalDays; i++) {
             LocalDate currentDate = startDate.plusDays(i);
@@ -165,16 +168,16 @@ public class CalendarService {
             newDate.setDateStr(DateHelper.DateToString(Date.from(currentDate.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant())));
             newDate.setDateLong(new BigDecimal(Date.from(currentDate.atStartOfDay(ZoneId.systemDefault()).toInstant()).getTime()));
 
-
-
             newDate.setYear(new BigDecimal(currentDate.getYear()));
             newDate.setDayofmonth(new BigDecimal(currentDate.getDayOfMonth()));
+            int dayOfWeekId =Utils.getWeekId(currentDate.getDayOfWeek().getValue()) ;
 
+           // log.info("@@@  Setting week Name: {} for Week Id: {} date {}",  currentDate.getDayOfWeek().name(), dayOfWeekId,newDate.getDateStr());
             BmsDayofweek dayOfWeek = new BmsDayofweek();
-            dayOfWeek.setDayofweekId(new BigDecimal(currentDate.getDayOfWeek().getValue()));
+            dayOfWeek.setDayofweekId(new BigDecimal(dayOfWeekId));
             newDate.setBmsDayofweek(dayOfWeek);
 
-            if (currentDate.getDayOfWeek().getValue() == 6 || currentDate.getDayOfWeek().getValue() == 7) {
+            if (dayOfWeekId == 6 || dayOfWeekId == 7) {
                 newDate.setIsdavailable(BigDecimal.ONE);
                 newDate.setIsbusinessday(BigDecimal.ONE);
             } else {
@@ -183,7 +186,7 @@ public class CalendarService {
             }
 
             BmsMonthofyear monthOfYear = new BmsMonthofyear();
-            monthOfYear.setMonthofyearId(new BigDecimal(currentDate.getDayOfMonth()));
+            monthOfYear.setMonthofyearId(new BigDecimal(currentDate.getMonth().getValue()));
             newDate.setBmsMonthofyear(monthOfYear);
 
             newDate.setIsholiday(BigDecimal.ONE);

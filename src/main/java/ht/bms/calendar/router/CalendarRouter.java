@@ -35,7 +35,7 @@ public class CalendarRouter {
                                 .and(queryParam("officeId", t -> true))
                                 .and(queryParam("serviceId", t -> true))
                                 .and(queryParam("dateOfficeCapacity", t -> true)),calendarHandler::checkAvailableDay))
-                        .add(baseRoute(RequestPredicates.POST("/setCalendar")
+                        .add(baseRoute(RequestPredicates.GET("/setCalendar")
                                 .and(queryParam("year", t -> true))
                                 .and(queryParam("numberOfYear", t -> true)),calendarHandler::setCalendar))
                         .add(baseRoute(RequestPredicates.GET("/getDate")
@@ -48,7 +48,6 @@ public class CalendarRouter {
                         .add(baseRoute(RequestPredicates.GET("/getMonOfYear")
                                 .and(queryParam("year", t -> true))
                                 .and(queryParam("month", t -> true)),calendarHandler::getMonthOfYear))
-
                 )//.onError(exceptionHandler::handleException)
                 .path("/api/v1/setting", builder -> builder
                         .add(baseRoute(RequestPredicates.GET("/getSetting")
