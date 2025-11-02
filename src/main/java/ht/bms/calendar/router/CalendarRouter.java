@@ -52,6 +52,8 @@ public class CalendarRouter {
                 .path("/api/v1/setting", builder -> builder
                         .add(baseRoute(RequestPredicates.GET("/getSetting")
                         .and(queryParam("institutionId", t -> true)),calendarHandler::getSetting))
+                        .add(baseRoute(RequestPredicates.GET("/getOfficeService")
+                        .and(queryParam("officeId", t -> true)),calendarHandler::getSetting))
                         .add(baseRoute(RequestPredicates.POST("/addSetting"), calendarHandler::addSetting))
                         .add(baseRoute(RequestPredicates.POST("/addInstitution"),calendarHandler::addInstitution))
                      //   .add(baseRoute(RequestPredicates.POST("/addOfficeInInstitution"),calendarHandler::addOfficeInInstitution))
