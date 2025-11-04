@@ -104,13 +104,21 @@ components:
     ########################
     #  API Specs  #
     ########################
-    Response:
+    ApiResponse:
       type: object
       properties:
         isSuccessfully:
           type: boolean
           example: true
           description: true if operation is successfully otherwise false
+        errorMessage:
+          type: string
+          example: "Operation completed successfully"
+          description: message of operation
+        errorCode:
+          type: integer
+          example: 0
+          description: error code of operation
 
     CalendarRequest:
       type: object

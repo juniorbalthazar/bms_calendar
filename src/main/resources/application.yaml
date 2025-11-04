@@ -13,7 +13,7 @@ logging:
 ##    pathsToMatch: /v1, /api/v1/**   user=admin and password=password
 
 server:
-  port: 6295
+  port: 6291
 spring:
   datasource:
     initialization-mode: always
