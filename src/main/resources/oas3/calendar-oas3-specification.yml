@@ -159,25 +159,21 @@ components:
           description: note of holiday if exist otherwise null
           example: null
         isBusinessDay:
-          type: number
-          format: number
+          type: boolean
           description: is business day
-          example: 1734768000000
+          example: true
         isDateAvailable:
-          type: number
-          format: number
+          type: boolean
           description: is date available
-          example: 1734768000000
+          example: true
         isHalfDay:
-          type: number
-          format: number
+          type: boolean
           description: is half day
-          example: 1734768000000
+          example: false
         isHolyDay:
-          type: number
-          format: number
+          type: boolean
           description: is holy day
-          example: 1734768000000
+          example: false
         year:
           type: number
           format: number
@@ -273,9 +269,9 @@ components:
           description: short name of institution
           example : zlab
         isDefault:
-          type: number
-          description: 0 is equal to false and 1 is equal to true
-          example : 0
+          type: boolean
+          description: is default institution
+          example : true
 
 
     OfficeBean:
@@ -286,13 +282,13 @@ components:
           description: office id
           example: 100
         active:
-          type: number
-          description: 0 is equal to false and 1 is equal to true
-          example : 0
+          type: boolean
+          description: is office active
+          example : true
         isCentral:
-          type: number
-          description: 0 is equal to false and 1 is equal to true
-          example : 1
+          type: boolean
+          description: is office central
+          example : false
         officeName:
           type: string
           format: text
@@ -313,9 +309,9 @@ components:
           description: full name of service
           example: BRJ / Identity
         isAvailable:
-          type: number
-          description: 0 is equal to false and 1 is equal to true
-          example : 0
+          type: boolean
+          description: is service available
+          example : true
         shortName:
           type: string
           format: text
@@ -334,8 +330,8 @@ components:
           example: 100
         nbreTransPerApplicant:
           type: number
-          description: 0 is equal to false and 1 is equal to true
-          example : 0
+          description: nomber of transaction per applicant
+          example : 100
         officeCapacity:
           type: number
           description: nomber of office capacity
@@ -355,9 +351,9 @@ components:
           description: nomber of days before certificat expiration
           example : 365
         sendEmailTransaction:
-          type: number
-          description:  0 is equal to false and 1 is equal to true
-          example : head office
+          type: boolean
+          description:  send email transaction
+          example : true
         maxTimeTxBeforePay:
           type: number
           description: max time transaction before pay
